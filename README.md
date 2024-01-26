@@ -23,6 +23,7 @@ touch .env
 ```
 
 * set up .env file with your credentials 
+```
 DB_HOSTNAME=[localhost]
 DB_PORT=[5432]
 DB_NAME=[postgres]
@@ -31,6 +32,7 @@ DB_PASSWORD=[password]
 SECRET_KEY=[secret_key]
 ALGORITHM=[HS256]
 ACCESS_TOKEN_EXPIRE_MINUTES=[60]
+```
 
 
 ### Start server
