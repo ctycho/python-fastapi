@@ -1,11 +1,12 @@
-from typing import List, Any
+from typing import List
 
 from fastapi import Response, status, HTTPException, Depends, APIRouter
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 
 from app import models, oauth2
 from app.database import get_db
-from app.schemas import PostCreate, Post
+from app.schemas import PostCreate, Post, PostOut
 
 
 router = APIRouter(
@@ -13,13 +14,20 @@ router = APIRouter(
     tags=['Posts']
 )
 
-@router.get("/", response_model=List[Post])
+@router.get("/", response_model=List[PostOut])
 async def get_posts(db: Session = Depends(get_db),
                     _: str = Depends(oauth2.get_current_user)):
     """Get all posts"""
     # cursor.execute("SELECT * FROM posts")
     # records = cursor.fetchall()
-    posts = db.query(models.Post).all()
+
+    # posts = db.query(models.Post).filter(
+    #     models.Post.title.contains('search')
+    #     ).limit(5).offset(1).all()
+
+    posts = db.query(models.Post, func.count(models.Vote.post_id).label('votes')).join(
+        models.Vote, models.Post.id == models.Vote.post_id, isouter=True
+        ).group_by(models.Post.id).all()
 
     return posts
 
@@ -53,13 +61,16 @@ async def create_post(post: PostCreate, db: Session = Depends(get_db),
     return new_post
 
 
-@router.get("/{id}", response_model=Post)
+@router.get("/{id}", response_model=PostOut)
 async def get_post(id: int, db: Session = Depends(get_db),
                    _: str = Depends(oauth2.get_current_user)):
     """get post by id"""
     # cursor.execute("SELECT * FROM posts WHERE id = %s", (str(id)))
     # row = cursor.fetchone()
-    post = db.query(models.Post).filter(models.Post.id == id).first()
+    # post = db.query(models.Post).filter(models.Post.id == id).first()
+    post = db.query(models.Post, func.count(models.Vote.post_id).label('votes')).join(
+        models.Vote, models.Post.id == models.Vote.post_id, isouter=True
+        ).group_by(models.Post.id).filter(models.Post.id == id).first()
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f'Did not find post with provided id: {id}')

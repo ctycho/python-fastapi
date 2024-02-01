@@ -15,7 +15,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl='login')
 # openssl rand -hex 32
 SECRET_KEY = settings.secret_key
 ALGORITHM = settings.algorithm
-ACCESS_TOKEN_EXPIRE_MINUTES = settings.access_token_expire_minutes
+ACCESS_TOKEN_EXPIRE_MINUTES = int(settings.access_token_expire_minutes)
 
 
 def create_access_token(data: dict):
@@ -48,8 +48,6 @@ def verify_access_token(token: str, credentials_exception):
 def get_current_user(token: str = Depends(oauth2_scheme),
                      db: Session = Depends(get_db)):
 
-    print('token')
-    print(token)
     credentials_exception = HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                                           detail='Could not validate credentials',
                                           headers={"WWW-Authenticate": "Bearer"})

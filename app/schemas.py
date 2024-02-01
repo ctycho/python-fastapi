@@ -1,27 +1,14 @@
 from datetime import datetime
-from typing import Optional
+from dataclasses import dataclass
+from typing import Optional, Annotated
 from pydantic import BaseModel, EmailStr
 
 
-class PostBase(BaseModel):
-    """Post"""
-    title: str
-    content: str
-    published: bool = True
-
-
-class PostCreate(PostBase):
-    """post create"""
-
-
-class Post(PostBase):
-    """post response"""
-    id: int
-    created_at: datetime
-    owner_id: int
-
-    class Config:
-        from_attributes = True
+@dataclass
+class ValueRange:
+    """range values"""
+    lo: int
+    hi: int
 
 
 class UserCreate(BaseModel):
@@ -43,6 +30,36 @@ class UserOut(BaseModel):
         from_attributes = True
 
 
+class PostBase(BaseModel):
+    """Post"""
+    title: str
+    content: str
+    published: bool = True
+
+
+class PostCreate(PostBase):
+    """post create"""
+
+
+class Post(PostBase):
+    """post response"""
+    id: int
+    created_at: datetime
+    owner_id: int
+    owner: UserOut
+
+    class Config:
+        from_attributes = True
+
+
+class PostOut(BaseModel):
+    Post: Post
+    votes: int
+
+    class Config:
+        from_attributes = True
+
+
 class Token(BaseModel):
     access_token: str
     token_type: str
@@ -54,3 +71,7 @@ class TokenData(BaseModel):
     class Config:
         from_attributes = True
 
+
+class Vote(BaseModel):
+    post_id: int
+    dir: int
